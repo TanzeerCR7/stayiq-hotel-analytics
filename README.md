@@ -54,6 +54,7 @@ An interactive Power BI dashboard with:
 
 ## Repository Structure
 
+```
 stayiq-hotel-analytics/
 ├── data/
 │   ├── raw/              # original dataset (not tracked in Git — see .gitignore)
@@ -67,6 +68,7 @@ stayiq-hotel-analytics/
 ├── requirements.txt
 ├── LICENSE
 └── README.md
+```
 
 ## How to Run
 

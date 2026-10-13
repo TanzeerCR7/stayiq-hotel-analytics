@@ -19,11 +19,21 @@ A full pipeline from raw data to a decision-ready dashboard:
 
 1. **Overall cancellation rate is 37.04%** — out of 119,390 bookings, 44,224 were cancelled.
 2. **City Hotel cancels far more than Resort Hotel.** City Hotel: 41.73% (33,102 of 79,330 bookings). Resort Hotel: 27.76% (11,122 of 40,060 bookings). City Hotel cancels at roughly 1.5x the rate of Resort Hotel.
-3. **£4,641,942.67 in revenue was lost to cancellations** (based on nightly rate, ADR, across all cancelled bookings).
+3. **Cancelled bookings represent 16,727,237.12 in revenue exposure** (nightly rate × length of stay, summed over all cancelled bookings). The earlier ADR-only figure of 4,641,942.67 ignored length of stay and understated the exposure by about 3.6x. "Exposure" means revenue at risk before any rooms are resold; resale is not in the data.
 4. **Cancelled bookings are booked much further in advance.** Average lead time for cancelled bookings: 144.8 days. Average lead time for completed bookings: 80.0 days — nearly double. Long lead time is a measurable early-warning signal for cancellation risk.
 5. **"Non Refund" deposits show a 99.36% cancellation rate** — the highest of any deposit type, and counter-intuitive on its face (14,494 of 14,587 bookings cancelled). This is flagged as a data anomaly rather than a clean insight — see Limitations.
 6. **Group bookings cancel at 61.06%**, more than double the rate of Online Travel Agent bookings (36.72%) and over 4x Direct bookings (15.34%). Group bookings are the highest-risk market segment by a wide margin.
-7. **Transient customers generate the most revenue by far** (£9,589,811.59), more than 4x Transient-Party (£2,162,780.78) and dwarfing Contract (£356,852.32) and Group (£48,172.91) — despite Group being the highest-cancellation segment. This is the customer base most worth protecting.
+7. **Transient customers generate the most realised revenue by far** (19,332,636.95 from non-cancelled stays, about 74% of the total), followed by Transient-Party (5,055,351.23), Contract (1,484,917.13) and Group (123,355.10). Group is the highest-cancellation segment but the smallest realised revenue contributor.
+
+## Metric Definitions
+
+| Metric | Definition | Defined in |
+|---|---|---|
+| Cancellation rate | cancelled bookings ÷ total bookings | Query 1 |
+| Revenue exposure (incl. stay) | SUM(adr × (weekend + week nights)) where is_canceled = 1 | Query 8 |
+| Realised revenue by customer type | SUM(adr × (weekend + week nights)) where is_canceled = 0 | Query 9 |
+| ADR-only exposure (legacy) | SUM(adr) where is_canceled = 1 | Query 3 |
+| Average lead time | AVG(lead_time) by cancellation status | Query 4 |
 
 ## Business Recommendations
 
@@ -44,7 +54,7 @@ A full pipeline from raw data to a decision-ready dashboard:
 
 An interactive Power BI dashboard with:
 
-- KPI cards for cancellation rate, total cancellations, and revenue lost
+- KPI cards for cancellation rate, total cancellations, and revenue exposure
 - A gauge visual for cancellation rate
 - Donut charts for deposit type and hotel-type cancellation share
 - Bar charts for revenue by customer type and cancellations by market segment
@@ -84,7 +94,8 @@ stayiq-hotel-analytics/
 
 ## Limitations
 
-- Revenue figures use ADR (Average Daily Rate) as a per-booking proxy rather than rate × length of stay, so "revenue lost" reflects nightly-rate exposure, not exact total booking value.
+- **Revenue figures are exposure estimates.** They use ADR × total nights (weekend + week nights). Earlier versions of this analysis used ADR alone, which understated exposure. Rooms from cancelled bookings may have been resold, which the data does not show.
+- **No currency is stated in the source dataset**, so figures are shown without a currency symbol.
 - The "Non Refund" 99.36% cancellation rate is unexplained and likely reflects a data quality or booking-system quirk rather than genuine customer behavior — flagged rather than acted on.
 - The "Undefined" market segment (2 rows) is excluded from business interpretation — treated as data noise, not a real customer segment.
 - This is a single flat table (no JOINs required for this analysis), so the SQL here focuses on filtering, grouping, and aggregation rather than multi-table joins.
